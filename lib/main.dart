@@ -1,11 +1,15 @@
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rms/Page_1.dart';
+import 'Config.dart';
+import 'package:http/http.dart' as http;
 void main() {
   runApp(MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
@@ -30,7 +34,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ()=>Navigator.pushReplacement(context,
             MaterialPageRoute(builder:
                 (context) =>
-                SecondScreen()
+                    Login()
+                // SecondScreen()
             )
         )
     );
@@ -48,9 +53,211 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-class SecondScreen extends StatelessWidget {
+
+
+
+class Login extends StatefulWidget {
+  const Login({Key? key}) : super(key: key);
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  TextEditingController NameCtrl = TextEditingController();
+  TextEditingController passwordCtrl = TextEditingController();
+
+
+  static  final formkey = GlobalKey<FormState>();
+  static AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
+
+  static var  selectValue = ''  ;
+
+
   @override
   Widget build(BuildContext context) {
+    return SafeArea
+      (child: Scaffold(
+      backgroundColor: Color(0xffae0000),
+      body: Form(
+        key: formkey,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding:  EdgeInsets.symmetric(vertical: Get.width*0.25,horizontal: Get.width*0.15),
+            child: Column(
+              // mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('RMS',style: TextStyle(color: Colors.white,fontSize: 25,fontWeight: FontWeight.bold),),
+                SizedBox(height: Get.width*0.15,),
+                Container(
+                  width: Get.width*0.75,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(15),),
+                  ),
+                  child: Padding(
+                    padding:  EdgeInsets.symmetric(vertical: Get.width*0.09,horizontal: Get.width*0.03),
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          style: TextStyle(color: Color(0xffae0000)),
+                          controller: NameCtrl,
+                          autovalidateMode: _autovalidateMode,
+                          validator: showError,
+                          keyboardType: TextInputType.text,
+                          decoration:InputDecoration(
+                            hintText: 'User Name',
+                            hintStyle: TextStyle(color: Color(0xffae0000),),
+                            contentPadding: EdgeInsets.symmetric(horizontal: Get.width*0.025,),
+                            prefixIcon: Container(
+                              // height: Get.width*0.12,
+                              padding: EdgeInsets.symmetric(vertical: Get.width*0.039),
+                              decoration: BoxDecoration(
+                                color: Color(0xffae0000),
+                                borderRadius: BorderRadius.all(Radius.circular(5)),
+                              ),
+                              child: Icon(Icons.person,color: Colors.white,size: 25),
+                            ),
+                            border: OutlineInputBorder(borderSide: BorderSide(color: Color(0xfff13535))),
+                            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xffae0000),width: Get.width*0.0032),),
+                            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xfff13535))),
+                            errorBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
+                          ),
+                        ),
+                        SizedBox(height: Get.width*0.05,),
+                        TextFormField(
+                          style: TextStyle(color: Color(0xffae0000)),
+                          controller: passwordCtrl,
+                          autovalidateMode: _autovalidateMode,
+                          validator: showError,
+                          keyboardType: TextInputType.number,
+                          decoration:InputDecoration(
+                            hintText: 'Password',
+                            hintStyle: TextStyle(color: Color(0xffae0000),),
+                            contentPadding: EdgeInsets.symmetric(horizontal: Get.width*0.025,),
+                            prefixIcon: Container(
+                              // height: Get.width*0.12,
+                              padding: EdgeInsets.symmetric(vertical: Get.width*0.039),
+                              decoration: BoxDecoration(
+                                color: Color(0xffae0000),
+                                borderRadius: BorderRadius.all(Radius.circular(5)),
+                              ),
+                              child: Icon(Icons.lock,color: Colors.white,size: 25),
+                            ),
+                              suffixIcon: Icon(Icons.remove_red_eye,color: Color(0xffae0000),),
+                            border: OutlineInputBorder(borderSide: BorderSide(color: Color(0xfff13535))),
+                            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xffae0000),width: Get.width*0.0032),),
+                            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xfff13535))),
+                            errorBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
+                          ),
+                        ),
+                        SizedBox(height: Get.width*0.05,),
+                        Container(
+                          width: Get.width*0.35,
+                          decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10),), color: Color(0xffae0000),),
+                         child: TextButton(
+                           onPressed: (){
+
+                               if(formkey.currentState!.validate()){
+                                 _autovalidateMode = AutovalidateMode.disabled;
+
+                                 loginReq();
+
+
+
+
+                               }else {
+                                 _autovalidateMode = AutovalidateMode.always;
+                               }
+                           },
+                           child: Text('Login',style: TextStyle(color: Colors.white),),
+                         ),
+                        ),
+
+                        TextButton(onPressed: (){},
+                            child: Text('Forgot Password...?',style: TextStyle(color: Color(0xffae0000),),)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ));
+  }
+  static var showError = (isvalue){
+    if(isvalue == ""){
+      return 'Required Field*';
+    }
+    return null;
+  };
+
+  Future<void> loginReq() async {
+
+    String segment = 'login/handlelogin';
+
+    Map<String,dynamic> data = {
+          "username" : NameCtrl.text,
+          "pwd" : passwordCtrl.text
+    };
+
+    var reqUrl = Uri.parse(BASE_URL + segment) ;
+    
+    http.Response response = await http.post(reqUrl,body: data,);
+    print(response.statusCode);
+
+        var respData = jsonDecode(response.body);
+        print(respData);
+         if(response.statusCode == 200){
+            if(respData['status']){
+              print('success login : ${respData['token']}');
+              var token = respData['token'] ;
+                await secStorage.readAll(aOptions: getAndroidOptions());
+              await secStorage.write(key: 'token', value: token );
+
+              Get.to(SecondScreen());
+
+            }else {
+              showDialog(context: context, builder: (context)=>AlertDialog(
+                backgroundColor: Colors.white,
+                title: Text('Error'),
+                content: Text(" ${respData['msg']}"),
+                actions: [
+                  TextButton(onPressed: ()=>Navigator.of(context).pop(), child: Text('OK',style: TextStyle(color: Colors.blueAccent),))
+                ],
+              ));
+            }
+
+
+         }else {
+          showDialog(context: context, builder: (context)=>AlertDialog(
+            backgroundColor: Colors.white,
+              title: Text('Error'),
+            content: Text("Page Not Found ${response.statusCode}"),
+            actions: [
+              TextButton(onPressed: ()=>Navigator.of(context).pop(), child: Text('OK',style: TextStyle(color: Colors.blueAccent),))
+            ],
+          ));
+         }
+
+
+
+  }
+}
+
+
+
+
+
+
+class SecondScreen extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    checkTok();
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(title:Text("RMS",style: TextStyle(fontSize: 25),),backgroundColor: Color(0xfff13535),),
@@ -126,5 +333,10 @@ class SecondScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void checkTok() async {
+    var getToken = await secStorage.read(key: "token");
+    print('second Screen token : $getToken');
   }
 }
