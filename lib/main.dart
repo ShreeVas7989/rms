@@ -30,15 +30,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 3),
-            ()=>Navigator.pushReplacement(context,
-            MaterialPageRoute(builder:
-                (context) =>
-                    Login()
-                // SecondScreen()
-            )
-        )
-    );
+    checkLoginToken();
+
   }
   @override
   Widget build(BuildContext context) {
@@ -50,6 +43,20 @@ class _MyHomePageState extends State<MyHomePage> {
             style:  GoogleFonts.yuseiMagic(fontStyle: FontStyle.italic,color: Colors.white,fontSize: 35),
           ),
       ),
+    );
+  }
+
+  void checkLoginToken() async {
+
+    await hasToken() ? Timer(Duration(seconds: 2), ()=>Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SecondScreen()))) :
+    Timer(Duration(seconds: 3),
+            ()=>Navigator.pushReplacement(context,
+            MaterialPageRoute(builder:
+                (context) =>
+                Login()
+              // SecondScreen()
+            )
+        )
     );
   }
 }
@@ -226,7 +233,8 @@ class _LoginState extends State<Login> {
                 title: Text('Error'),
                 content: Text(" ${respData['msg']}"),
                 actions: [
-                  TextButton(onPressed: ()=>Navigator.of(context).pop(), child: Text('OK',style: TextStyle(color: Colors.blueAccent),))
+                  TextButton(onPressed: ()=>Navigator.of(context).pop(),
+                      child: Text('OK',style: TextStyle(color: Colors.blueAccent),))
                 ],
               ));
             }
@@ -238,7 +246,8 @@ class _LoginState extends State<Login> {
               title: Text('Error'),
             content: Text("Page Not Found ${response.statusCode}"),
             actions: [
-              TextButton(onPressed: ()=>Navigator.of(context).pop(), child: Text('OK',style: TextStyle(color: Colors.blueAccent),))
+              TextButton(onPressed: ()=>Navigator.of(context).pop(),
+                  child: Text('OK',style: TextStyle(color: Colors.blueAccent),))
             ],
           ));
          }
@@ -253,7 +262,22 @@ class _LoginState extends State<Login> {
 
 
 
-class SecondScreen extends StatelessWidget {
+class SecondScreen extends StatefulWidget {
+
+  @override
+  State<SecondScreen> createState() => _SecondScreenState();
+}
+
+class _SecondScreenState extends State<SecondScreen> {
+
+  bool? isLoading = false;
+  List<Widget> perList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getPersonList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -261,9 +285,36 @@ class SecondScreen extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(title:Text("RMS",style: TextStyle(fontSize: 25),),backgroundColor: Color(0xfff13535),),
-        body: Center(
-            child:Text("Screen-1",textScaleFactor: 2,),
+        body: Column(
+children: [
+  isLoading! ? Center(
+            child: CircularProgressIndicator()
+        ) : Column(
+          children: perList,
         ),
+  Container(
+    width: Get.width*0.35,
+    decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10),), color: Color(0xfff13535),),
+    child: TextButton(
+      onPressed: (){
+        // if(formkey.currentState!.validate()){
+        //   _autovalidateMode = AutovalidateMode.disabled;
+        //
+        //   loginReq();
+        //
+        //
+        //
+        //
+        // }else {
+        //   _autovalidateMode = AutovalidateMode.always;
+        // }
+      },
+      child: Text('LogOut',style: TextStyle(color: Colors.white,fontSize: 20),),
+    ),
+  ),
+   ],
+        ),
+
         drawer: Drawer(
           backgroundColor: Color(0xfff13535),
           child: Padding(
@@ -338,5 +389,63 @@ class SecondScreen extends StatelessWidget {
   void checkTok() async {
     var getToken = await secStorage.read(key: "token");
     print('second Screen token : $getToken');
+  }
+
+  Future<void> getPersonList() async {
+    setState(() {
+      isLoading = true;
+    });
+    await Future.delayed(Duration(milliseconds: 600));
+
+    String segment = DASHBOARD_URL + 'PersonsList';
+    var getToken = await secStorage.read(key: "token");
+    var data = {
+      'token' : getToken
+    };
+
+    var personListUri = Uri.parse(segment);
+
+     var response = await http.post(personListUri,body: data,);
+
+     print("person List : ${response.body}");
+
+     var respData = jsonDecode(response.body);
+
+     // if(response.statusCode == 200)
+      if(respData['status']) {
+
+
+       List personListData =  respData['persons'];
+
+       personListData.forEach((element) {
+
+         String name = element['name'];
+         String mobile = element['mobile'];
+         String aadgar = element['aadhar'];
+
+         perList.add(Padding(padding: EdgeInsets.symmetric(horizontal: 10,vertical: 10),
+         child: ListTile(
+             title: Text(name),
+           subtitle: Text(mobile),
+           trailing: Text(aadgar),
+           ),
+         ),
+         );
+       });
+
+
+      }else {
+
+        perList.clear();
+        perList.add(Text('Data Not Found'));
+
+      }
+
+
+
+    setState(() {
+      isLoading = false;
+    });
+
   }
 }
