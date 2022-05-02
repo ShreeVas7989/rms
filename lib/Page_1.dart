@@ -34,41 +34,43 @@ class _screen_1State extends State<screen_1> {
   Widget build(BuildContext context) {
     final  node = FocusScope.of(context);
     return SafeArea(
-        child: Scaffold(
-          appBar: AppBar(backgroundColor: Color(0xfff13535),title: Center(child: Text('Manage Persons')),),
-          body: Form(
-            key: formkey,
-            child: Padding(
-              padding:  EdgeInsets.symmetric(vertical: Get.width*0.045,horizontal: Get.width*0.01),
-              child: Column(
-                children: const [
-                   ListTile(leading: CircleAvatar(
-                     backgroundImage: NetworkImage('https://cloudfront-us-east-2.images.arcpublishing.com/reuters/F6INOOMSRRL5XOOQDRPZUWPWBA.jpg'),
-                   ),
-                     title: Expanded(child: Text('Srimusuru Anasurya'),),
-                   subtitle: Expanded(child: Text('9293457758'),),
-                     trailing: Text('28-04-2022'),
-                   ),
-                ],
+        child: SingleChildScrollView(
+          child: Scaffold(
+            appBar: AppBar(backgroundColor: Color(0xfff13535),title: Center(child: Text('Manage Persons')),),
+            body: Form(
+              key: formkey,
+              child: Padding(
+                padding:  EdgeInsets.symmetric(vertical: Get.width*0.045,horizontal: Get.width*0.01),
+                child: Column(
+                  children: const [
+                     ListTile(leading: CircleAvatar(
+                       backgroundImage: NetworkImage('https://cloudfront-us-east-2.images.arcpublishing.com/reuters/F6INOOMSRRL5XOOQDRPZUWPWBA.jpg'),
+                     ),
+                       title: Expanded(child: Text('Srimusuru Anasurya'),),
+                     subtitle: Expanded(child: Text('9293457758'),),
+                       trailing: Text('28-04-2022'),
+                     ),
+                  ],
+                ),
               ),
             ),
+
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {},
+              backgroundColor: const Color(0xffFF6262),
+              child:  TextButton(onPressed: (){
+                showModalBottomSheet<void>(
+                  context: context,
+                  backgroundColor: const Color(0xffFF6262) ,
+
+                  builder: (BuildContext context) {
+                    return validation();
+                  },
+                );
+              },child: Icon(Icons.add,color: Colors.white,)),
+            ),
+
           ),
-
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {},
-            backgroundColor: const Color(0xffFF6262),
-            child:  TextButton(onPressed: (){
-              showModalBottomSheet<void>(
-                context: context,
-                backgroundColor: const Color(0xffFF6262) ,
-
-                builder: (BuildContext context) {
-                  return validation();
-                },
-              );
-            },child: Icon(Icons.add,color: Colors.white,)),
-          ),
-
         ));
   }
 

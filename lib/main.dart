@@ -7,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rms/Page_1.dart';
 import 'Config.dart';
 import 'package:http/http.dart' as http;
+
+import 'register person.dart';
 void main() {
   runApp(MyApp());
 
@@ -108,6 +110,7 @@ class _LoginState extends State<Login> {
                     child: Column(
                       children: [
                         TextFormField(
+                          textInputAction: TextInputAction.next,
                           style: TextStyle(color: Color(0xffae0000)),
                           controller: NameCtrl,
                           autovalidateMode: _autovalidateMode,
@@ -134,6 +137,7 @@ class _LoginState extends State<Login> {
                         ),
                         SizedBox(height: Get.width*0.05,),
                         TextFormField(
+                          textInputAction: TextInputAction.done,
                           style: TextStyle(color: Color(0xffae0000)),
                           controller: passwordCtrl,
                           autovalidateMode: _autovalidateMode,
@@ -246,7 +250,7 @@ class _LoginState extends State<Login> {
               title: Text('Error'),
             content: Text("Page Not Found ${response.statusCode}"),
             actions: [
-              TextButton(onPressed: ()=>Navigator.of(context).pop(),
+              TextButton(onPressed: ()=>Navigator.of(context).pop(MyHomePage()),
                   child: Text('OK',style: TextStyle(color: Colors.blueAccent),))
             ],
           ));
@@ -284,37 +288,35 @@ class _SecondScreenState extends State<SecondScreen> {
     checkTok();
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title:Text("RMS",style: TextStyle(fontSize: 25),),backgroundColor: Color(0xfff13535),),
-        body: Column(
+        appBar: AppBar(title:Text("RMS",style: TextStyle(fontSize: 25),),backgroundColor: Color(0xfff13535),
+        actions: [
+          TextButton(
+              onPressed: (){
+                // AlertDialog(
+                //   backgroundColor: Colors.white,
+                //   title: Text('Error'),
+                //   content: Text(" ${['msg']}"),
+                //   actions: [
+                //     TextButton(onPressed: ()=>Navigator.of(context).pop(),
+                //         child: Text('OK',style: TextStyle(color: Colors.blueAccent),))
+                //   ],
+                // );
+                Get.to(Login());
+              },
+              child: Icon(Icons.logout,color: Colors.white,)),
+        ],
+        ),
+        body: SingleChildScrollView(
+          child: Column(
 children: [
   isLoading! ? Center(
-            child: CircularProgressIndicator()
-        ) : Column(
-          children: perList,
-        ),
-  Container(
-    width: Get.width*0.35,
-    decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10),), color: Color(0xfff13535),),
-    child: TextButton(
-      onPressed: (){
-        // if(formkey.currentState!.validate()){
-        //   _autovalidateMode = AutovalidateMode.disabled;
-        //
-        //   loginReq();
-        //
-        //
-        //
-        //
-        // }else {
-        //   _autovalidateMode = AutovalidateMode.always;
-        // }
-      },
-      child: Text('LogOut',style: TextStyle(color: Colors.white,fontSize: 20),),
-    ),
-  ),
+              child: CircularProgressIndicator()
+          ) : Column(
+            children: perList,
+          ),
    ],
+          ),
         ),
-
         drawer: Drawer(
           backgroundColor: Color(0xfff13535),
           child: Padding(
@@ -382,6 +384,24 @@ children: [
             ),
           ),
         ),
+
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {},
+          backgroundColor: const Color(0xfff13535),
+          child:  TextButton(onPressed: (){
+            showModalBottomSheet<void>(
+              context: context,
+              backgroundColor: const Color(0xffFF6262) ,
+
+              builder: (BuildContext context) {
+                return registerPerson(refresh : (){
+                  getPersonList();
+                });
+              },
+            );
+          },child: Icon(Icons.add,color: Colors.white,)),
+        ),
+
       ),
     );
   }
